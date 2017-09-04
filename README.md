@@ -5,6 +5,8 @@
 
     pip install -r requirements.txt 
 
+初次运行如果没有安装nmap库的话会报错，　这时不要使用`pip install nmap` 这样的命令来安装,pip按照的是nmap-0.0.1版本，正确的安装为`apt-get install python-nmap`, 按照的版本为nmap-0.6.1
+
 ### Usage
 ```
 usage: python s7scan.py [-h] {exploit,webdir,portscan} ...

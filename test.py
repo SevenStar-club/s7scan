@@ -7,5 +7,7 @@ from pprint import pprint
 import os.path 
 import imp 
 
-help(imp)
+print help(nmap.nmap)
+#nm = nmap.PortScanner()
+#print help(nm)
 
