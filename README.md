@@ -2,7 +2,8 @@
 
 
 ### 安装依赖
-pip install -r requirements.txt 
+
+    pip install -r requirements.txt 
 
 ### Usage
 ```
