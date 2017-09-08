@@ -8,11 +8,19 @@ import argparse
 import threading
 import random
 from core.config import ConfigFileParser,webdir_result,portscan_result,exploit_result
-from core.data import output,data,queue,output,threads_num,paths,banners,colorprinter,print_random_text
+from core.data import output,data,queue,output,threads_num,paths,banners,colorprinter,print_random_text,thread_mode
 from core.exploit import loadScript,loadTargets
-from core.plugins.thread_func import Thread_Func
+from core.plugins.thread_func import Thread_func
 from core.plugins.process_func import speed
+from core.plugins.gevent_func import Gevent_func
 from core.plugins.portscan import PortScan
+from core.plugins.subnet import Subnet
+from core.plugins.whois import whois
+from core.ctftools.bintostr import bintostr,asciitostr,hextostr
+from core.ctftools.morse import morse
+from core.ctftools.zhalan import zhalan
+from core.ctftools.nbase64 import nbase64
+from core.ctftools.kaisa import kaisa,kaisa2
 
 
 class Controller():
@@ -31,14 +39,15 @@ class Controller():
 
 		#配置文件解析
 		mode = self.cf.webdir_mode()
+		thread_mode = mode
 
 		#调用扫描插件
 		if mode == '0':
-			Thread_Func(url,data,threads_num)
+			Thread_func(url,data,threads_num)
 		if mode =='1':
-			pass 
+			Gevent_func(url,data,threads_num)
 		if mode == '2':
-			speed(Thread_Func,url)
+			speed(Thread_func,url)
 
 		if outfile:
 			self.report(webdir_result,outfile)
@@ -66,6 +75,42 @@ class Controller():
 
 		if outfile:
 			self.report(portscan_result,outfile)
+
+
+	def subnet(self,args):
+		output.dataOut('[*] 加载C段扫描插件...')
+		#参数解析
+		ip = args.t 
+		if ip:
+			Subnet(ip)
+
+	def whois(self,args):
+		output.dataOut('[*] 加载whois查询插件...')
+		#参数解析
+		domain = args.t 
+		if domain:
+			whois(domain)
+
+	def crypto(self,args):
+		output.dataOut('[*] 加载crypto插件...')
+		#参数解析
+		#print args
+		if args.kaisa:
+			kaisa(args.kaisa)
+		elif args.kaisa2:
+			kaisa2(args.kaisa2)
+		elif args.morse:
+			morse(args.morse)
+		elif args.zhalan:
+			zhalan(args.zhalan)
+		elif args.nbase64:
+			nbase64(args.nbase64)
+		elif args.b2s:
+			bintostr(args.b2s)
+		elif args.a2s:
+			asciitostr(args.a2s)
+		elif args.h2s:
+			hextostr(args.h2s)
 
 			
 	def Exploit(self,args):
@@ -143,7 +188,6 @@ class Controller():
 		for t in threads:
 			t.join()
 
-
 	# report 导出
 	def report(self,result,outfile):
 		content = json.dumps(result, sort_keys=True, indent=4)
@@ -166,13 +210,13 @@ class Controller():
 			portscan -m -p 
 
 		'''
-		parser = argparse.ArgumentParser(usage="python s7scan.py [-h] {exploit,webdir,portscan} ...")
+		parser = argparse.ArgumentParser() #argparse会自动添加usage
 		#产生一个子命令解析器
 		subparser = parser.add_subparsers(title=u'子命令',description=u"使用 's7star.py 子命令 -h' 获得子命令帮助")
 
 		#使用子命令解析器去生成每一个子命令
 
-		# exploit
+		# exploit  漏洞利用
 		exploit = subparser.add_parser("exploit",help=u"Exploit系统，可自行添加POC, 批量执行exp",description=u'example: python s7scan.py exploit -s test -m 127.0.0.1/30')
 		exploit.add_argument('-s',help=u"加载POC, 提供test测试poc")
 		exploit.add_argument('-u',help=u"target url: 目标url")
@@ -183,18 +227,41 @@ class Controller():
 		exploit.add_argument('-o',help=u"导出json格式文件")
 		exploit.set_defaults(func=self.Exploit)
 
-		# webdir
+		# webdir 目录扫描
 		webdir = subparser.add_parser("webdir",help=u"敏感信息扫描",description=u"example:python s7scan.py webdir -u localhost")
 		webdir.add_argument('-u',help="target url:目标url")
 		webdir.add_argument('-o',help=u"导出json格式文件")
 		webdir.set_defaults(func=self.webdir)
-		# portscan
+
+		# portscan 端口扫描
 		portscan = subparser.add_parser("portscan",help=u"端口扫描",description=u"example:python s7scan.py portscan -t localhost")
 		portscan.add_argument('-t',help=u"target ip 目标ip")
 		portscan.add_argument('-m',help=u"mask(127.0.0.1/28 默认掩码为24)")
 		portscan.add_argument('-p',help=u"port 目标端口",type=int)
 		portscan.add_argument('-o',help=u"导出json格式文件")
 		portscan.set_defaults(func=self.portscan)
+
+		#subnet　C段扫描
+		subnet = subparser.add_parser("subnet",help=u"C段扫描",description=u"example:python s7scan.py subnet -t 211.82.99.1")
+		subnet.add_argument('-t',help=u"target ip 目标ip")
+		subnet.set_defaults(func=self.subnet)
+
+		#subnet　C段扫描
+		whois = subparser.add_parser("whois",help=u"whois查询",description=u"example:python s7scan.py whois -t blogsir.com.cn")
+		whois.add_argument('-t',help=u"target domain")
+		whois.set_defaults(func=self.whois)
+
+		#crypto
+		crypto = subparser.add_parser("crypto",help=u"一些解密的辅助工具",description=u"example:python s7scan.py crypto -t blogsir.com.cn")
+		crypto.add_argument('-k','--kaisa',help=u"凯撒解密,只偏移英文大小写字母")
+		crypto.add_argument('-k2','--kaisa2',help=u"凯撒移位,偏移整个ascii")
+		crypto.add_argument('-m','--morse',help=u"摩斯解密")
+		crypto.add_argument('-zl','--zhalan',help=u"栅栏解密")
+		crypto.add_argument('-nb','--nbase64',help=u"自动识别多重base64解密")
+		crypto.add_argument('-b2s',help=u"二进制转字符串,八位，七位分别解密")
+		crypto.add_argument('-a2s',help=u"ascii转字符串,用空格或者逗号分隔")
+		crypto.add_argument('-h2s',help=u"十六进制转字符串")
+		crypto.set_defaults(func=self.crypto)
 
 		args = parser.parse_args()
 		args.func(args)

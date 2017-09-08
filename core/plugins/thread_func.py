@@ -1,5 +1,6 @@
-#!/usr/bin/env python
-# __author__= 'w8ay'
+#!/usr/bin/env python        
+#coding:utf-8
+
 import os
 import sys
 import Queue
@@ -7,12 +8,12 @@ import time
 import requests
 import threading
 import download
-import console
+from core.console import getTerminalSize
 from core.config import output
-from core.data import webdir_result
+from core.data import webdir_result,thread_mode
 
 
-class Thread_Func:
+class Thread_func:
     def __init__(self,root,data,threadNum):
         self.root = root
         if not self.root:
@@ -24,7 +25,7 @@ class Thread_Func:
         self.downloader = download.Downloader()
         self.total_count = len(data)
         self.start_time = time.time()
-        sizex, sizey = console.getTerminalSize()
+        sizex, sizey = getTerminalSize()
         self.width = sizex 
         self.height = sizey
         for line in data:  
@@ -36,7 +37,7 @@ class Thread_Func:
     def test_url(self):
         while True:
             try:
-                path = self.fixpath(self.task.get(False))
+                path = '/'+self.fixpath(self.task.get(False))
                 url = self.root+path
                 res = self.downloader.get(url)
                 #print url,res.status_code
@@ -51,12 +52,12 @@ class Thread_Func:
                     webdir_result.append(message)
 
                 self.remaining_count = self.task.qsize()
-                if self.remaining_count:
-                    self.printProgress()
+                #print thread_mode
+                if thread_mode == '0': #只是在多线程模式下才打印进度栏
+                    if self.remaining_count:
+                        self.printProgress()
             except Exception,e:
                 self.remaining_count = self.task.qsize()
-                #self.printProgress()
-                #print e
                 break
     
     def work(self):
@@ -64,6 +65,7 @@ class Thread_Func:
         for i in range(self.threadNum):
             t = threading.Thread(target=self.test_url)
             threads.append(t)
+            t.setDaemon(True)
             t.start()
         for t in threads:
             t.join()
@@ -71,7 +73,7 @@ class Thread_Func:
     def fixpath(self,path):
         if '%EXT%' in path:
             path = path.replace('%EXT%','php')
-        if path.startswith('/'):
+        if path.startswith('/'):  # path前统一不加/
             path = path[1:]
         return path
 

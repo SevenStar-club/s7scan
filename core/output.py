@@ -57,6 +57,8 @@ class CLIOutput(object):
         with self.mutex:
             contentLength = ''
             status = response.status_code
+            if status == 400:
+                print status
 
             # Check blacklist
             if status in self.blacklists:

@@ -12,6 +12,7 @@ def speed(func,url):
     pools = []
     for i in data:
         payloads.append(i)
+        
     for i in range(0,len(payloads),flag):
         group_data = payloads[i:i+flag]
         #print len(group_data)

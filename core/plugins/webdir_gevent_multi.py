@@ -1,5 +1,6 @@
-#!/usr/bin/env python
-# __author__= 'w8ay'
+#!/usr/bin/env python        
+#coding:utf-8
+
 import os
 import sys
 import Queue

@@ -37,6 +37,8 @@ def getdata():  # 获取字典的值
 	return data
 
 queue = Queue.Queue()
+task = Queue.Queue() #
+thread_mode = '0' #默认为0
 output = CLIOutput()
 colorprinter = ColorPrinter()
 paths = getpath()

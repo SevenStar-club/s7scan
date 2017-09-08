@@ -59,7 +59,7 @@ class PortScan:
 	def MaskFix(self,Mask):
 		if 'http://' in Mask or 'https://' in Mask:
 			Mask = Mask.replace('http://','').replace('https://','')
-		
+	
 		if '/' in Mask:
 			return Mask 
 		else:
