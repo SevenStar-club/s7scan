@@ -55,5 +55,6 @@ def poc(host):
                     "[x]Failed : had crawled all possible url, but i can't find out it. So it's failed.\n")
     except:
         print("Request Error")
+        return False
 if __name__ == '__main__':
     poc('http://localhost/index.php')

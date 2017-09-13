@@ -114,23 +114,40 @@ class Controller():
 
 			
 	def Exploit(self,args):
+		#self.isview = args.v #添加一个-v显示详细信息的参数
 		# list所有的poc
 		if args.list:
-			files = os.listdir(paths['SCRIPT_PATH'])
+			files = []
+			all_files = os.listdir(paths['SCRIPT_PATH'])
+			#print all_files
+			for file in all_files:
+				if 'pyc' in file or '__init__.py' in file:
+					pass 
+				else:
+					files.append(file)
+
+			#print files	
 			mes1 = '[*] Script Name（总共%s个POC)'%str(len(files)-1)
 			output.dataOut(mes1)
 			for file in files:
-				if '__init__' not in file:
+				if '__init__' not in file and 'pyc' not in file:
 					output.dataOut('   '+file)
 
 		# 查询文件名
 		if args.q:
 			keyword = args.q
-			files = os.listdir(paths['SCRIPT_PATH'])
+			files = []
+			all_files = os.listdir(paths['SCRIPT_PATH'])
+			#print all_files
+			for file in all_files:
+				if 'pyc' in file or '__init__.py' in file:
+					pass 
+				else:
+					files.append(file)
 			mes = "[*] 查询关键字: %s"%keyword
 			output.dataOut(mes)
 			for file in files:
-				if '__init__' not in file:
+				if '__init__' not in file :
 					if keyword in file:
 						output.dataOut('   '+file)
 
@@ -169,12 +186,15 @@ class Controller():
 				url = queue.get(False)
 				#print url
 				res = self.script_obj.poc(url)
+				#print 'res:',res,type(res)
 				if res: # 如果失败返回False
 					mes = 'Target %s is exploit...: %s'%(url,res)
 					output.expOut(mes)
 					exploit_result.append(mes)
-				else:
+				elif res is False or 'error' in res or 'fail' in res:
 					output.expOut('Target %s fail'%url)
+				else:
+					output.expOut('unknown')
 			except:
 				break
 
@@ -183,11 +203,19 @@ class Controller():
 		threads = []
 		for i in range(threads_num):
 			t = threading.Thread(target=self.scan)
+			#t.setDaemon(True)
 			threads.append(t)
 			t.start() 
 		for t in threads:
-			t.join()
+			t.join(3)
+			if t.isAlive():
+				print 'this thread is timeout'
 
+        # while 1:
+        #     if queue.qsize() > 0:
+        #         time.sleep(0.01)
+        #     else:
+        #         break
 	# report 导出
 	def report(self,result,outfile):
 		content = json.dumps(result, sort_keys=True, indent=4)
