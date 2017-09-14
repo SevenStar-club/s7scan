@@ -33,14 +33,15 @@ optional arguments:
 #### exploit 
 
 ```
-usage: python s7scan.py [-h] {exploit,webdir,portscan} ... exploit
-       [-h] [-s S] [-u U] [-f F] [-m M] [-l] [-q Q] [-o O]
+usage: s7scan.py exploit [-h] [-s S] [-a] [-u U] [-f F] [-m M] [-l] [-q Q]
+                         [-o O]
 
 example: python s7scan.py exploit -s test -m 127.0.0.1/30
 
 optional arguments:
   -h, --help  show this help message and exit
   -s S        加载POC, 提供test测试poc
+  -a          加载所有的POC,对单个目标点进行测试
   -u U        target url: 目标url
   -f F        target file: 目标url文件
   -m M        target mask: 目标网段,默认掩码为24

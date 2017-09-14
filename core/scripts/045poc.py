@@ -16,7 +16,7 @@ def poc(url):
     try:
         html = requests.get(url,headers=header,timeout=3).content
     except:
-        html = 'error'
+        html = False
     # print len(html)
     return html
  

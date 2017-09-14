@@ -121,6 +121,10 @@ class CLIOutput(object):
 
         self.newLine(message)
 
+    def pocOut(self,mes):
+        messaeg = Fore.YELLOW + mes + Style.RESET_ALL
+        self.newLine(messaeg)
+
     def lastPath(self, path, index, length):
         with self.mutex:
             percentage = lambda x, y: float(x) / float(y) * 100

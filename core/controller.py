@@ -7,6 +7,7 @@ import json
 import argparse
 import threading
 import random
+from prettytable import PrettyTable
 from core.config import ConfigFileParser,webdir_result,portscan_result,exploit_result
 from core.data import output,data,queue,output,threads_num,paths,banners,colorprinter,print_random_text,thread_mode
 from core.exploit import loadScript,loadTargets
@@ -25,6 +26,10 @@ from core.ctftools.kaisa import kaisa,kaisa2
 
 class Controller():
 	def __init__(self):
+		self.script_objs = None
+		self.outable = PrettyTable(["target", "result"])
+		self.outable.align["name"] = "l"  
+		self.outable.padding_width = 1
 		self.cf  = ConfigFileParser()
 		threads_num = self.cf.threads_num()
 		print_random_text(banners[random.randint(0,4)])
@@ -157,14 +162,37 @@ class Controller():
 			if script_name.endswith('.py'):
 				script_name = script_name[:-3]
 			#print script_name
-			output.dataOut('[*] 加载poc: %s.py ...\n'%script_name)
+			output.pocOut('[*] 加载poc: %s.py ...\n'%script_name)
 			script_path = paths['SCRIPT_PATH']+script_name
-			self.script_obj = loadScript(script_name)
+			self.script_objs = loadScript(script_name)
 			#print self.script_obj.poc(1)
 
 		if (args.s and not args.u) and (args.s and not args.m):
 			output.error('请设置target目标')
 			sys.exit()
+
+		if args.a:
+			if args.m:
+				output.warning('please input single target')
+				sys.exit()
+			output.target(args.u)
+			files = os.listdir(paths['SCRIPT_PATH'])
+			for file in files:
+				if file.endswith('.py') and '__init__' not in file and 'test' not in file:
+					file = file.rstrip('.py')
+					self.script_objs = loadScript(file)
+					#print self.script_objs
+					loadTargets(args)
+					output.pocOut('\n[*] 加载poc: %s.py'%file)
+					self.scan()
+			#print exploit_result
+			self.printtable()
+			if args.o:
+				outfile = args.o 
+				self.report(exploit_result,outfile)
+			sys.exit()
+     
+          
 
 		#加载目标
 		loadTargets(args)
@@ -175,6 +203,7 @@ class Controller():
 			self.scan()
 		else:
 			self.run()
+		self.printtable()
 		if args.o:
 			outfile = args.o 
 			self.report(exploit_result,outfile)
@@ -184,13 +213,12 @@ class Controller():
 		while 1:
 			try:
 				url = queue.get(False)
-				#print url
-				res = self.script_obj.poc(url)
-				#print 'res:',res,type(res)
-				if res: # 如果失败返回False
+				res = self.script_objs.poc(url)
+				#print url,'res:',res,type(res)
+				if res : # 如果失败返回False
 					mes = 'Target %s is exploit...: %s'%(url,res)
 					output.expOut(mes)
-					exploit_result.append(mes)
+					exploit_result.append((url,res))
 				elif res is False or 'error' in res or 'fail' in res:
 					output.expOut('Target %s fail'%url)
 				else:
@@ -207,9 +235,9 @@ class Controller():
 			threads.append(t)
 			t.start() 
 		for t in threads:
-			t.join(3)
-			if t.isAlive():
-				print 'this thread is timeout'
+			t.join()
+			# if t.isAlive():
+			# 	print 'this thread is timeout'
 
         # while 1:
         #     if queue.qsize() > 0:
@@ -222,7 +250,11 @@ class Controller():
 		with open(paths['REPORT_PATH']+outfile,'a') as f:
 			f.write(content)
 
-
+	def printtable(self):
+		if exploit_result:
+			for result in exploit_result:
+				self.outable.add_row(result)
+			print self.outable
 
 	def main(self):
 		reload(sys)
@@ -247,6 +279,7 @@ class Controller():
 		# exploit  漏洞利用
 		exploit = subparser.add_parser("exploit",help=u"Exploit系统，可自行添加POC, 批量执行exp",description=u'example: python s7scan.py exploit -s test -m 127.0.0.1/30')
 		exploit.add_argument('-s',help=u"加载POC, 提供test测试poc")
+		exploit.add_argument('-a',help=u"加载所有的POC,对单个目标点进行测试",action="store_true")
 		exploit.add_argument('-u',help=u"target url: 目标url")
 		exploit.add_argument('-f',help=u"target file: 目标url文件")
 		exploit.add_argument('-m',help=u"target mask: 目标网段,默认掩码为24")

