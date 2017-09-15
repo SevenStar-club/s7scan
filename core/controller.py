@@ -17,6 +17,7 @@ from core.plugins.gevent_func import Gevent_func
 from core.plugins.portscan import PortScan
 from core.plugins.subnet import Subnet
 from core.plugins.whois import whois
+from core.plugins.password import PasswdGenerator
 from core.ctftools.bintostr import bintostr,asciitostr,hextostr
 from core.ctftools.morse import morse
 from core.ctftools.zhalan import zhalan
@@ -34,7 +35,7 @@ class Controller():
 		threads_num = self.cf.threads_num()
 		print_random_text(banners[random.randint(0,4)])
 		#colorprinter.print_blue_text(u'[-_-]不忘初心，一群走在安全路上的年轻人[-_-]')
-
+	#目录扫描
 	def webdir(self,args):
 		output.dataOut('[*] 加载目录扫描插件...')
 		#参数解析
@@ -56,7 +57,7 @@ class Controller():
 
 		if outfile:
 			self.report(webdir_result,outfile)
-
+	#端口扫描
 	def portscan(self,args):
 		output.dataOut('[*] 加载端口扫描插件...')
 		#参数解析
@@ -71,7 +72,7 @@ class Controller():
 		#调用插件
 		if ip:
 			output.target(ip)
-			ps = PortScan(ports=scanports)
+			ps = PortScan(ip=ip,ports=scanports)
 		elif mask:
 			if port:
 				ps = PortScan(single_port=port,Mask='211.82.99.1')
@@ -81,21 +82,55 @@ class Controller():
 		if outfile:
 			self.report(portscan_result,outfile)
 
-
+	# C段扫描
 	def subnet(self,args):
 		output.dataOut('[*] 加载C段扫描插件...')
 		#参数解析
 		ip = args.t 
 		if ip:
 			Subnet(ip)
-
+	#whois 信息查询
 	def whois(self,args):
 		output.dataOut('[*] 加载whois查询插件...')
 		#参数解析
 		domain = args.t 
 		if domain:
 			whois(domain)
+	#社会工程学字典生成, 日期生成
+	def passwd(self,args):
+		fullname = args.fullname 
+		nickname = args.nickname
+		englishname = args.englishname
+		partnername = args.partnername
+		phone = args.phone 
+		qq = args.qq
+		keywords = args.keywords
+		oldpasswd = args.oldpasswd
+		keynumbers = args.keynumbers
+		domain = args.domain
+		startyear = args.startyear
+		endyear = args.endyear 
+		splitword = args.splitword
 
+		if startyear and endyear:
+			pg = PasswdGenerator(startyear=startyear,endyear=endyear,splitword=splitword)
+			result = pg.birthday()
+		else:
+			#print '社会工程学字典生成'
+			pg = PasswdGenerator(fullname=fullname,nickname=nickname,englishname=englishname,partnername=partnername,phone=phone,qq=qq,keywords=keywords,oldpasswd=oldpasswd,keynumbers=keynumbers,domain=domain)
+			result = pg.generate()
+
+		output.pocOut('[*] 生成字典大小:%s条数据'%str(result[-1])) 
+		if args.o:
+			with open(args.o,'w') as f:
+				for i in result[0]:
+					#print i
+					f.write(str(i)+"\n")
+		else:
+			for i in result[0]:
+				print i
+
+	# 一些编码处理
 	def crypto(self,args):
 		output.dataOut('[*] 加载crypto插件...')
 		#参数解析
@@ -311,6 +346,25 @@ class Controller():
 		whois = subparser.add_parser("whois",help=u"whois查询",description=u"example:python s7scan.py whois -t blogsir.com.cn")
 		whois.add_argument('-t',help=u"target domain")
 		whois.set_defaults(func=self.whois)
+
+		#passwd 社会工程学字典生成
+		passwd = subparser.add_parser("passwd",help=u"社会工程学字典生成,日期生成",description=u"example:python s7scan.py passwd -fullname 'zhang san' 或者passwd -startyear 2000 -endyear 2017")
+		passwd.add_argument('-fullname',help=u"名字字母全称,空格分隔,如zhang san feng")
+		passwd.add_argument('-nickname',help=u"昵称")
+		passwd.add_argument('-englishname',help=u"英文名")
+		passwd.add_argument('-partnername',help=u"伴侣姓名字母全称")
+		passwd.add_argument('-phone',help=u"手机号")
+		passwd.add_argument('-qq',help=u"qq号")
+		passwd.add_argument('-keywords',help=u"关键字,空格分隔")
+		passwd.add_argument('-keynumbers',help=u"关键数字,空格分隔")
+		passwd.add_argument('-oldpasswd',help=u"旧的密码")
+		passwd.add_argument('-domain',help=u"域名")
+		# 只生成日期
+		passwd.add_argument('-startyear',help=u"生成日期的开始年份")
+		passwd.add_argument('-endyear',help=u"生成日期的结束年份")
+		passwd.add_argument('-splitword',help=u"分隔词,可以是/,-,默认为空",default="")
+		passwd.add_argument('-o',help=u"到处txt字典")
+		passwd.set_defaults(func=self.passwd)
 
 		#crypto
 		crypto = subparser.add_parser("crypto",help=u"一些解密的辅助工具",description=u"example:python s7scan.py crypto -t blogsir.com.cn")
