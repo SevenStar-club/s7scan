@@ -324,7 +324,7 @@ class Controller():
 		exploit.set_defaults(func=self.Exploit)
 
 		# webdir 目录扫描
-		webdir = subparser.add_parser("webdir",help=u"敏感信息扫描",description=u"example:python s7scan.py webdir -u localhost")
+		webdir = subparser.add_parser("webdir",help=u"敏感目录扫描",description=u"example:python s7scan.py webdir -u localhost")
 		webdir.add_argument('-u',help="target url:目标url")
 		webdir.add_argument('-o',help=u"导出json格式文件")
 		webdir.set_defaults(func=self.webdir)
