@@ -307,12 +307,12 @@ class Controller():
 		'''
 		parser = argparse.ArgumentParser() #argparse会自动添加usage
 		#产生一个子命令解析器
-		subparser = parser.add_subparsers(title=u'子命令',description=u"使用 's7star.py 子命令 -h' 获得子命令帮助")
+		subparser = parser.add_subparsers(title=u'子命令',description=u"使用 's7scan.py 子命令 -h' 获得子命令帮助")
 
 		#使用子命令解析器去生成每一个子命令
 
 		# exploit  漏洞利用
-		exploit = subparser.add_parser("exploit",help=u"Exploit系统，可自行添加POC, 批量执行exp",description=u'example: python s7scan.py exploit -s test -m 127.0.0.1/30')
+		exploit = subparser.add_parser("exploit",help=u"Exploit系统，可自行添加POC, 批量执行POC",description=u'example: python s7scan.py exploit -s test -m 127.0.0.1/30')
 		exploit.add_argument('-s',help=u"加载POC, 提供test测试poc")
 		exploit.add_argument('-a',help=u"加载所有的POC,对单个目标点进行测试",action="store_true")
 		exploit.add_argument('-u',help=u"target url: 目标url")
