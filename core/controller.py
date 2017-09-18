@@ -29,8 +29,9 @@ class Controller():
 	def __init__(self):
 		self.script_objs = None
 		self.outable = PrettyTable(["target", "result"])
-		self.outable.align["name"] = "l"  
-		self.outable.padding_width = 1
+		self.outable.align["target"] = "l"  
+		self.outable.align["result"] = "l"
+		self.outable.padding_width = 5
 		self.cf  = ConfigFileParser()
 		threads_num = self.cf.threads_num()
 		print_random_text(banners[random.randint(0,4)])
@@ -75,7 +76,7 @@ class Controller():
 			ps = PortScan(ip=ip,ports=scanports)
 		elif mask:
 			if port:
-				ps = PortScan(single_port=port,Mask='211.82.99.1')
+				ps = PortScan(single_port=port,Mask=mask)
 			else:
 				output.warning('please input port')
 
@@ -250,13 +251,15 @@ class Controller():
 				url = queue.get(False)
 				res = self.script_objs.poc(url)
 				#print url,'res:',res,type(res)
-				if res : # 如果失败返回False
-					mes = 'Target %s is exploit...: %s'%(url,res)
+				if res: # 如果失败返回False
+					mes = 'Target %s is exploit...: \n%s'%(url,res)
 					output.expOut(mes)
+					#print 'url:',url,res
 					exploit_result.append((url,res))
-				elif res is False or 'error' in res or 'fail' in res:
+				elif res is False:
 					output.expOut('Target %s fail'%url)
 				else:
+					#print res
 					output.expOut('unknown')
 			except:
 				break

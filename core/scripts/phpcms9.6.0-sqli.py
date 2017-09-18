@@ -51,7 +51,9 @@ def __poc(url):
     result = re.findall('XPATH syntax error: \'(.*?)\'', r.content)
     if result[0]:
         #print "{} - {}".format(url, result[0])
-        return "{} - {}".format(url, result[0])
+        return result[0]
+    else:
+        return False
 
 
 if __name__ == '__main__':

