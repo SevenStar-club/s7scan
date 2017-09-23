@@ -3,3 +3,5 @@ ConfigParser
 colorama
 argparse
 prettytable
+gevent
+python-nmap

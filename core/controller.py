@@ -65,6 +65,7 @@ class Controller():
 		ip = args.t
 		mask = args.m 
 		port = args.p
+		file = args.f
 		outfile = args.o
 
 		# 获取配置文件里的端口信息
@@ -79,6 +80,8 @@ class Controller():
 				ps = PortScan(single_port=port,Mask=mask)
 			else:
 				output.warning('please input port')
+		elif file:
+			ps = PortScan(file=file,ports=scanports)
 
 		if outfile:
 			self.report(portscan_result,outfile)
@@ -337,6 +340,7 @@ class Controller():
 		portscan.add_argument('-t',help=u"target ip 目标ip")
 		portscan.add_argument('-m',help=u"mask(127.0.0.1/28 默认掩码为24)")
 		portscan.add_argument('-p',help=u"port 目标端口",type=int)
+		portscan.add_argument('-f',help=u"网段文件列表")
 		portscan.add_argument('-o',help=u"导出json格式文件")
 		portscan.set_defaults(func=self.portscan)
 

